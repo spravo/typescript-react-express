@@ -1,5 +1,5 @@
 # Typescript express react example.
-DEV Dependencis:
+Dev Dependencies:
  - webpack
  - typings
  - nodemon
