@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "express": "registry:npm/express#4.14.0+20160925001530",
+    "lodash": "registry:npm/lodash#4.0.0+20161015015725",
+    "react": "registry:npm/react#15.0.1+20170104200836",
+    "react-dom": "registry:npm/react-dom#15.0.1+20160826174104",
+    "react-router": "registry:npm/react-router#2.4.0+20160915183637",
+    "serve-static": "registry:npm/serve-static#1.11.1+20161113104247"
+  },
+  "globalDependencies": {
+    "node": "registry:env/node#6.0.0+20170102175725"
+  }
+}

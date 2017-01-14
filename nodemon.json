@@ -1,0 +1,14 @@
+{
+    "env": {
+        "NODE_ENV": "development"
+    },
+    "ext": "js",
+    "verbose": true,
+    "ignore": [
+        ".git",
+        "node_modules/**/node_modules"
+    ],
+    "watch": [
+        "dist"
+    ]
+}
