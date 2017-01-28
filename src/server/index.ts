@@ -6,6 +6,9 @@ import os       = require('os');
 import indexPage from './indexPage';
 import staticFiles from './staticFiles';
 
+if (!process.env['NODE_ENV'])
+    throw new Error('NODE_ENV is not defined');
+
 const isProduction = process.env['NODE_ENV'] == 'production';
 
 switch (true) {
