@@ -4,10 +4,13 @@
   "description": "",
   "main": "dist/bundle.js",
   "scripts": {
-    "build": "webpack",
-    "build:watch": "webpack --watch",
-    "server": "node dist/bundle.js",
-    "server:watch": "nodemon dist/bundle.js"
+    "start:prod":   "export NODE_ENV=production && npm-run-all clear build server",
+    "start:dev":    "export NODE_ENV=development && npm-run-all --parallel build:watch server:watch",
+    "build":        "webpack --progress",
+    "build:watch":  "webpack --watch --progress",
+    "server":       "node dist/bundle.js",
+    "server:watch": "nodemon dist/bundle.js",
+    "clear":        "rm -rf dist public"
   },
   "author": "",
   "license": "ISC",
@@ -24,6 +27,7 @@
     "less-loader": "^2.2.3",
     "node-sass": "^4.1.1",
     "nodemon": "^1.11.0",
+    "npm-run-all": "^4.0.1",
     "react-hot-loader": "^1.3.1",
     "sass-loader": "^4.1.1",
     "source-map-loader": "^0.1.5",
