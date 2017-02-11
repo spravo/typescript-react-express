@@ -7,7 +7,9 @@ var pathPublicFolder = path.join(path.resolve(path.dirname('')), 'public');
 var entry = './src/client/index.tsx';
 
 var commonLoaders = [
-    { test: /\.tsx?$/, loaders: ['react-hot', 'ts-loader'] },
+    { test: /\.tsx?$/, loaders: [ 'react-hot', 'ts-loader' ] },
+    { test: /\.(png|jpe?g|gif|svg)(\?.*)?$/, loader: 'file' },
+    { test: /\.(ttf|woff2?|eot)(\?.*)?$/, loader: 'file' }
 ];
 
 function client() {
@@ -16,11 +18,14 @@ function client() {
         target: 'web',
         entry: [ entry ],
         resolve: {
-            extensions: [ '', '.ts', '.tsx', '.js', '.json', '.css', '.scss' ]
+            extensions: [ '', '.ts', '.tsx', '.js', '.json', '.css', '.scss', '.less' ]
         },
         module: {
             loaders: commonLoaders.concat([
-                { test: /\.s(a|c)ss$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass?includePaths[]=' + encodeURIComponent(path.resolve(pathPublicFolder, 'styles'))) }
+                {
+                    test: /\.(sc|c)ss$/,
+                    loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass?includePaths[]=' + encodeURIComponent(path.resolve(pathPublicFolder, 'styles')))
+                }
             ])
         },
         output: {

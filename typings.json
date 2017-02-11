@@ -8,6 +8,8 @@
     "serve-static": "registry:npm/serve-static#1.11.1+20161113104247"
   },
   "globalDependencies": {
+    "bootstrap": "registry:dt/bootstrap#3.3.5+20160726204056",
+    "jquery": "registry:dt/jquery#1.10.0+20170104155652",
     "node": "registry:env/node#6.0.0+20170102175725"
   }
 }

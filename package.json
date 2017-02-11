@@ -15,7 +15,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "express": "^4.14.0",
+    "jquery": "^3.1.1",
     "lodash": "^4.17.4",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
@@ -25,6 +27,7 @@
     "cross-env": "^3.1.4",
     "css-loader": "^0.26.1",
     "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.10.0",
     "less-loader": "^2.2.3",
     "node-sass": "^4.1.1",
     "nodemon": "^1.11.0",
