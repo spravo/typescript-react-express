@@ -1,62 +1,57 @@
-import express  = require('express');
-import path     = require('path');
-import cluster  = require('cluster');
-import os       = require('os');
+import * as express from 'express';
+import { request } from 'http';
 
-import indexPage from './indexPage';
-import staticFiles from './staticFiles';
+// import ssrController from './ssr';
 
-if (!process.env['NODE_ENV'])
-    throw new Error('NODE_ENV is not defined');
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
+const webpackConfig  = require('../../webpack.config');
 
-const isProduction = process.env['NODE_ENV'] == 'production';
+const compiler = webpack(webpackConfig);
 
-switch (true) {
-    case isProduction && cluster.isMaster:
-        masterSection();
-        break;
+const config = require('../../config')(process.env.NODE_ENV);
+const app = express();
 
-    case isProduction && !cluster.isMaster:
-        workerSection();
-        break;
+// Serve hot-reloading bundle to client
+app.use(webpackDevMiddleware(compiler, {
+  hot: true,
+  noInfo: true,
+  publicPath: webpackConfig.output.publicPath,
+  serverSideRender: true
+}));
+app.use(webpackHotMiddleware(compiler));
 
-    case !isProduction:
-        workerSection();
-        break;
-}
+// routers
+app.get('*', (req, res, next) => {
+  require('./ssr').default(req, res, next);
+});
 
-function masterSection() {
-    // Count the machine's CPUs
-    const cpuCount = os.cpus().length;
-    // Create a worker for each CPU
-    for (var i = 0; i < cpuCount; i += 1) {
-        cluster.fork();
-    }
-
-    // Listen for dying workers
-    cluster.on('exit', function (worker, code, signal) {
-        // Replace the dead worker, we're not sentimental
-        console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
-        cluster.fork();
+// Do "hot-reloading" of react stuff on the server
+// Throw away the cached client modules and let them be re-required next time
+compiler.plugin('done', () => {
+  console.log("Clearing /client/ module cache from server");
+  Object.keys(require.cache)
+    .filter((id) => /client/.test(id) || /ssr/.test(id))
+    .forEach((id) => {   
+      console.log(id)
+      delete require.cache[id];
     });
-}
+});
 
-function workerSection() {
-    const app = express();
 
-    // Display the index.html file
-    app.get('/', indexPage);
+// app.use(config.PUBLIC_PATH, express.static(config.PUBLIC_FOLDER, { index: false }));
 
-    // load the static file service - this is dependent on the NODE_ENV
-    staticFiles(app);
+// app.use((req, res, next) => {
+//   console.log(res.locals.webpackStats);
+//   console.log(res.locals.webpackStats.toJson().assetsByChunkName)
+//   next()
+// })
 
-    app.listen(3000, function() {
-        if (isProduction)
-            console.log('Worker %d running!', cluster.worker.id);
-        else {
-            console.log('===>   Starting Server . . . . .');
-            console.log('===>   Environment: ' + process.env['NODE_ENV']);
-        }
+app.listen(config.PORT, (err) => {
+  if (err) throw err;
 
-    });
-}
+  console.log('===> Starting Server . . .');
+  console.log('===> Port: ' + config.PORT);
+  console.log('===> Environment: ' + process.env.NODE_ENV);
+});

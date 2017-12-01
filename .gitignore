@@ -1,5 +1,4 @@
 # Project excludes
-src/**/*.js
 
 # Build folder
 dist
@@ -7,7 +6,6 @@ public
 
 # Dependencies folder
 node_modules
-typings
 
 # Misc excludes
 .idea

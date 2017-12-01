@@ -1,14 +1,13 @@
 {
-    "env": {
-        "NODE_ENV": "development"
-    },
-    "ext": "js",
-    "verbose": true,
-    "ignore": [
-        ".git",
-        "node_modules/**/node_modules"
-    ],
-    "watch": [
-        "dist"
-    ]
+  "verbose": true,
+  "ignore": [
+    "dist",
+    "public"
+  ],
+  "watch": [
+    "src/server/**/*.ts",
+    "src/server/**/*.tsx"
+  ],
+  "ext": "ts tsx json",
+  "exec": "ts-node src/server/index.ts"
 }

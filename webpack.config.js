@@ -1,43 +1,71 @@
-var isProduction    = process.env.NODE_ENV == 'production';
-var client          = require('./webpack.client.config');
-var webpack         = require('webpack');
-var path            = require('path');
-var fs              = require('fs');
+'use strict';
 
-function server() {
-    var nodeModules = {};
-    fs.readdirSync('node_modules')
-        .filter(function(x) {
-            return ['.bin'].indexOf(x) === -1;
-        })
-        .forEach(function(mod) {
-            nodeModules[mod] = 'commonjs ' + mod;
-        });
+const path = require('path');
+const webpack = require("webpack");
 
-    return {
-        name: 'server',
-        context: __dirname,
-        entry: './src/server/index.ts',
-        externals: nodeModules,
-        target: 'node',
-        output: {
-            path: path.join(__dirname, 'dist'),
-            filename: 'bundle.js'
-        },
-        resolve: {
-            extensions: [ '', '.js', '.ts' ]
-        },
-        module: {
-            loaders: [
-                { test: /\.tsx?$/, exclude: /node_modules/, loader: 'ts-loader' }
-            ]
-        }
-    }
-}
+const HtmlPlugin = require('html-webpack-plugin');
+const CleanPlugin = require('clean-webpack-plugin');
+const config = require('./config')(process.env.NODE_ENV);
+const vendors = require('./webpack/vendor');
 
-var configs = [ server() ];
+const ENTRY_PATH = path.resolve(__dirname, 'src/client');
 
-if (isProduction)
-    configs.push(client);
+var host = (process.env.HOST || 'localhost');
+var port = (+process.env.PORT + 1) || 3001;
 
-module.exports = configs;
+module.exports = {
+  devtool: 'inline-source-map',
+  target: 'web',
+  context: path.resolve(__dirname),
+  entry: {
+    app: [
+      "react-hot-loader/patch",
+      path.join(ENTRY_PATH, 'index'),
+      'webpack-hot-middleware/client',
+      'webpack/hot/dev-server',
+    ],
+    vendor: vendors
+  },
+  resolve: {
+    extensions: [ '.ts', '.tsx', '.js' ]
+  },
+  output: {
+    path: config.PUBLIC_FOLDER,
+    filename: '[name]-[hash].js',
+    chunkFilename: '[name]-[chunkhash].js',
+    publicPath: config.PUBLIC_PATH
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.tsx?$/,
+        use: [
+          'react-hot-loader/webpack',
+          'awesome-typescript-loader'
+        ],
+        // loader: 'awesome-typescript-loader',
+        include: ENTRY_PATH,
+        exclude: path.resolve(__dirname, 'node_modules')
+      }
+    ]
+  },
+  plugins: [
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor'
+    }),
+    new CleanPlugin(config.PUBLIC_FOLDER),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('development')
+      }
+    }),
+    // new HtmlPlugin({
+    //   chunks: [ 'app', 'vendor', 'manifest' ],
+    //   filename: 'index.html',
+    //   template: path.join(ENTRY_PATH, 'index.html')
+    // }),
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin()
+  ]
+};

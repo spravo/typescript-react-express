@@ -1,26 +1,36 @@
-import React = require('react');
-import ReactDOM = require('react-dom');
-import _ = require('lodash');
-import jQuery = require('jquery');
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
 
-import { hashHistory, Router } from 'react-router';
-import { globalFn } from '../shared/external';
+import App from './app';
+import { configureStore } from './store';
+import { AppContainer } from 'react-hot-loader'
 
-import route from './route';
-const mountPoint = document.getElementById('root');
+const element = document.getElementById('root');
+const preloadedState = window.__PRELOADED_STATE__;;
+const store = configureStore(preloadedState);
 
-ReactDOM.render(
-    <Router history={hashHistory}>
-        {route()}
-    </Router>,
-    mountPoint
-);
+delete window.__PRELOADED_STATE__;
 
-globalFn('_', _);
-globalFn('jQuery', jQuery);
+function render (Component: typeof App) { 
+  ReactDOM.hydrate(
+    <AppContainer>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Component />
+        </BrowserRouter>
+      </Provider>
+    </AppContainer>
+  , element);
+}
 
-require('bootstrap/dist/js/bootstrap.js');
+render(App);
 
-/* require style */
-require('bootstrap/dist/css/bootstrap.css');
-require('./themes/root.scss');
+// Hot Module Replacement API
+if (module.hot) {
+  module.hot.accept('./app', function () {
+    const NextApp: typeof App = require('./app').default;
+    render(NextApp);
+  });
+}

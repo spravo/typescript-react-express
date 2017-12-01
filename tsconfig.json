@@ -1,43 +1,23 @@
 {
-    "compilerOptions": {
-        "sourceMap": true,
-        "noImplicitAny": true,
-        "removeComments": true,
-        "experimentalDecorators": true,
-        "module": "commonjs",
-        "target": "es5",
-        "jsx": "react"
-    },
-    "filesGlob": [
-        "src/**/*.ts",
-        "src/**/*.tsx",
-        "typings/**/*.ts"
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "jsx": "react",
+    "outDir": "dist",
+    "alwaysStrict": true,
+    "rootDirs": [ "src" ],
+    "types": [
+      "node",
+      "react",
+      "react-dom"
     ],
-    "exclude": [
-        "node_modules"
-    ],
-    "files": [
-        "src/server/index.ts",
-        "src/server/indexPage.ts",
-        "src/server/staticFiles.ts",
-        "src/shared/external.ts",
-        "src/client/components/UI/Empty.tsx",
-        "src/client/containers/App.tsx",
-        "src/client/containers/Sidebar.tsx",
-        "src/client/index.tsx",
-        "src/client/route.tsx",
-        "typings/globals/bootstrap/index.d.ts",
-        "typings/globals/jquery/index.d.ts",
-        "typings/globals/node/index.d.ts",
-        "typings/index.d.ts",
-        "typings/modules/express/index.d.ts",
-        "typings/modules/lodash/index.d.ts",
-        "typings/modules/react-dom/index.d.ts",
-        "typings/modules/react-router/index.d.ts",
-        "typings/modules/react/index.d.ts",
-        "typings/modules/serve-static/index.d.ts"
-    ],
-    "atom": {
-        "rewriteTsconfig": true
-    }
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2015.promise"
+    ]
+  }
 }
