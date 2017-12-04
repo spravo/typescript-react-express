@@ -2,35 +2,41 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
+import { renderRoutes, RouteConfig } from 'react-router-config';
+import { AppContainer } from 'react-hot-loader';
 
-import App from './app';
+import 'isomorphic-fetch';
+import './styles/index.scss';
+
+import { routes } from './router';
 import { configureStore } from './store';
-import { AppContainer } from 'react-hot-loader'
 
 const element = document.getElementById('root');
-const preloadedState = window.__PRELOADED_STATE__;;
+const preloadedState = window.__PRELOADED_STATE__;
 const store = configureStore(preloadedState);
 
 delete window.__PRELOADED_STATE__;
 
-function render (Component: typeof App) { 
-  ReactDOM.hydrate(
+function render (route: RouteConfig[]) {
+  const childContent = (
     <AppContainer>
       <Provider store={store}>
         <BrowserRouter>
-          <Component />
+          {renderRoutes(route)}
         </BrowserRouter>
       </Provider>
     </AppContainer>
-  , element);
+  );
+
+  ReactDOM.hydrate(childContent, element);
 }
 
-render(App);
+render(routes);
 
 // Hot Module Replacement API
 if (module.hot) {
-  module.hot.accept('./app', function () {
-    const NextApp: typeof App = require('./app').default;
-    render(NextApp);
+  module.hot.accept('./router', () => {
+    const newRoutes = require('./router').routes;
+    render(newRoutes);
   });
 }

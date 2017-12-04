@@ -1,71 +1,38 @@
 'use strict';
 
-const path = require('path');
-const webpack = require("webpack");
+const _ = require('lodash');
 
-const HtmlPlugin = require('html-webpack-plugin');
-const CleanPlugin = require('clean-webpack-plugin');
-const config = require('./config')(process.env.NODE_ENV);
-const vendors = require('./webpack/vendor');
+function mergeWebpackConfigHelper(objValue, srcValue) {
+  if (_.isArray(objValue)) {
+    return objValue.concat(srcValue);
+  }
+}
 
-const ENTRY_PATH = path.resolve(__dirname, 'src/client');
+const configList = {
+  development: require('./webpack/config.development'),
+  common: require('./webpack/config.common'),
+  production: require('./webpack/config.production')
+}
 
-var host = (process.env.HOST || 'localhost');
-var port = (+process.env.PORT + 1) || 3001;
+/**
+ * @param {string} env
+ * @return {object}
+ */
+function getConfig (env) {
+  if (_.isUndefined(env)) {
+    throw new Error('Can\'t find local environment variable via process.env.NODE_ENV');
+  }
 
-module.exports = {
-  devtool: 'inline-source-map',
-  target: 'web',
-  context: path.resolve(__dirname),
-  entry: {
-    app: [
-      "react-hot-loader/patch",
-      path.join(ENTRY_PATH, 'index'),
-      'webpack-hot-middleware/client',
-      'webpack/hot/dev-server',
-    ],
-    vendor: vendors
-  },
-  resolve: {
-    extensions: [ '.ts', '.tsx', '.js' ]
-  },
-  output: {
-    path: config.PUBLIC_FOLDER,
-    filename: '[name]-[hash].js',
-    chunkFilename: '[name]-[chunkhash].js',
-    publicPath: config.PUBLIC_PATH
-  },
-  module: {
-    loaders: [
-      {
-        test: /\.tsx?$/,
-        use: [
-          'react-hot-loader/webpack',
-          'awesome-typescript-loader'
-        ],
-        // loader: 'awesome-typescript-loader',
-        include: ENTRY_PATH,
-        exclude: path.resolve(__dirname, 'node_modules')
-      }
-    ]
-  },
-  plugins: [
-    new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor'
-    }),
-    new CleanPlugin(config.PUBLIC_FOLDER),
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('development')
-      }
-    }),
-    // new HtmlPlugin({
-    //   chunks: [ 'app', 'vendor', 'manifest' ],
-    //   filename: 'index.html',
-    //   template: path.join(ENTRY_PATH, 'index.html')
-    // }),
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NamedModulesPlugin()
-  ]
-};
+  if (_.isUndefined(configList[env]) || env === 'common') {
+    throw new Error('Can\'t find environments see configList object');
+  }
+
+  return _.mergeWith(
+    {},
+    configList[env](__dirname),
+    configList.common(__dirname),
+    mergeWebpackConfigHelper
+  );
+}
+
+module.exports = getConfig(process.env.NODE_ENV);

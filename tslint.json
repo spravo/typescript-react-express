@@ -1,0 +1,13 @@
+{
+  "extends": [ "tslint:latest", "tslint-react" ],
+  "rules": {
+    "quotemark": [ true, "single" ],
+    "space-before-function-paren": true,
+    "ordered-imports": false,
+    "trailing-comma": false,
+    "no-var-requires": false,
+    "no-console": false,
+    "no-implicit-dependencies": false,
+    "no-submodule-imports": false
+  }
+}

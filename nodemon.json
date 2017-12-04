@@ -1,13 +1,18 @@
 {
+  "delay": "2000",
   "verbose": true,
   "ignore": [
     "dist",
     "public"
   ],
   "watch": [
-    "src/server/**/*.ts",
-    "src/server/**/*.tsx"
+    "src/server/**/*.{ts,tsx}",
+    "config",
+    "webpack"
   ],
-  "ext": "ts tsx json",
-  "exec": "ts-node src/server/index.ts"
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "js json ts tsx",
+  "exec": "ts-node --inspect src/server/index.ts"
 }

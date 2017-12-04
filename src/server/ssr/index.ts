@@ -4,84 +4,71 @@ import * as fs from 'fs';
 import * as util from 'util';
 import * as React from 'react';
 import * as _ from 'lodash';
-
-import * as ReactDOMServer from 'react-dom/server';
+import { renderToString } from 'react-dom/server';
 
 const existsP = util.promisify(fs.exists);
-const readFileP = util.promisify(fs.readFile);
 
-import { Html } from './html';
-import { Component, IComponentConfig } from './component';
-import { configureStore } from '../../client/store';
+import { Html, DOCTYPE } from './html';
+import { IComponentConfig } from './component';
 
 const config = require('../../../config')(process.env.NODE_ENV);
 
-// function configureHTML(template: string, component: string, state): string {
-//   let document: string = null;
+import 'isomorphic-fetch';
 
-//   // Inserts the rendered React HTML into main div
-//   document = template.replace(
-//     /<div id="root"><\/div>/,
-//     `<div id="root">${component}</div>`
-//   );
-
-//   // WARNING: See the following for security issues around embedding JSON in HTML:
-//   // http://redux.js.org/docs/recipes/ServerRendering.html#security-considerations
-//   document = document.replace(
-//     '__PRELOADED_STATE__  = {}',
-//     `__PRELOADED_STATE__  = ${JSON.stringify(state).replace(/</g, '\\u003c')}`
-//   );
-
-//   return document;
-// }
-
-export default function serverSideRender (req: express.Request, res: express.Response, next: express.NextFunction) {
-  // global.navigator = { userAgent: req.headers['user-agent'] };
-  const componentConfig: IComponentConfig = {
-    routerContext: {},
-    preloadStore: { items: [] },
-    locationUrl: req.url
-  };
- 
-  // Renders our App component into an HTML string
-  const template = ReactDOMServer.renderToString(React.createElement(Component, {
-    config: componentConfig
-  }));
-  // let templatePath = path.join(config.PUBLIC_FOLDER, 'index.html');
-
-  if (componentConfig.routerContext.url) {
-    res.writeHead(301, { Location: componentConfig.routerContext.url });
-    res.end();
-    return;
+function getAssets (res: express.Response) {
+  if (process.env.NODE_ENV === 'development' && res.locals.webpackStats) {
+    const assets = res.locals.webpackStats.toJson().assetsByChunkName;
+    return Promise.resolve(assets);
   }
 
-  res.send(
-    '<!doctype html>\n' +
-    ReactDOMServer.renderToString(React.createElement(Html, {
-      content: template,
-      store: configureStore(componentConfig.preloadStore),
-      assets: res.locals.webpackStats.toJson().assetsByChunkName,
-      publicPath: config.PUBLIC_PATH,
-      // any: res.locals.webpackStats.toJson()
-    }))
-  );
+  const assetsPath = path.join(config.PUBLIC_FOLDER, 'manifest.json');
 
-  // existsP(path.join(config.PUBLIC_FOLDER, 'index.html'))
-  //   .then((exists) => {
-  //     if (!exists) {
-  //       templatePath = path.join(config.SRC_FOLDER, 'client/index.html')
-  //     }
+  return existsP(assetsPath)
+    .then((exists) => {
+      let assets = {};
+      if (exists) {
+        assets = require(assetsPath);
+      }
 
-  //     return readFileP(templatePath, 'utf8');
-  //   })
-  //   .then((template) => {
-  //     res.send(
-  //       '<!doctype html>\n' +
-  //       ReactDOMServer.renderToString(React.createElement(Html, {
-  //         content: mockup,
-  //         store: configureStore(componentConfig.preloadStore)
-  //       }))
-  //     );
-  //   })
-  //   .catch((e) => next(e));
+      return Promise.resolve(assets);
+    });
+}
+
+export default function serverSideRender (req: express.Request, res: express.Response, next: express.NextFunction) {
+  const { Component, getStore, fetchData } = require('./component');
+  const navigator = { userAgent: req.headers['user-agent'] };
+  const componentConfig: IComponentConfig = {
+    routerContext: {},
+    store: getStore(),
+    locationUrl: req.url
+  };
+
+  Promise.all(fetchData(req.url, componentConfig.store))
+    .then(() => getAssets(res))
+    .then((assets) => {
+      const template = renderToString(React.createElement(Component, {
+        config: componentConfig
+      }));
+
+      if (componentConfig.routerContext.status === 404) {
+        res.status(404);
+      }
+
+      if (componentConfig.routerContext.url) {
+        res.redirect(301, componentConfig.routerContext.url);
+        return;
+      }
+
+      res.send(
+        DOCTYPE + '\n' +
+        renderToString(React.createElement(Html, {
+          assets,
+          content: template,
+          publicPath: config.PUBLIC_PATH,
+          store: componentConfig.store,
+        }))
+      );
+
+    })
+    .catch((err) => next(err));
 }

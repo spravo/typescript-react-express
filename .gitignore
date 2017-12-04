@@ -6,9 +6,11 @@ public
 
 # Dependencies folder
 node_modules
+ts-node-*
 
 # Misc excludes
 .idea
 *.log
 *.swp
 *.map
+.v8flags.*

@@ -1,11 +1,13 @@
 import { compose, createStore, applyMiddleware, Store, Middleware } from 'redux';
 
-import reducers from '../reducers';
+import { reducer } from '../reducers';
+import { asyncMiddleware } from '../model/middleware';
 
 export function configureStore (initStore: {} = {}) {
   let composeEnhancers = compose;
-  const enhancers: Array<any> = [];
-  const middleware: Array<Middleware> = [
+  const enhancers: any[] = [];
+  const middleware: Middleware[] = [
+    asyncMiddleware()
   ];
 
   if (typeof window !== 'undefined' && typeof window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ === 'function') {
@@ -13,7 +15,7 @@ export function configureStore (initStore: {} = {}) {
   }
 
   const store = createStore(
-    reducers,
+    reducer,
     initStore,
     composeEnhancers(
       applyMiddleware(...middleware),

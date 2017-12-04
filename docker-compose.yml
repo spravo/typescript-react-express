@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+  app:
+    image: node:8.6
+    container_name: typescript-react-express
+    volumes:
+      - .:/app
+    entrypoint:
+      - /bin/bash
+    ports:
+      - 3000:3000
+      - 5858:5858
+      - 9229:9229
+    command: -s
+    working_dir: /app
+    tty: true

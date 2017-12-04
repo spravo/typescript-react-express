@@ -2,12 +2,15 @@
 
 const path = require('path');
 
-function config (environment = 'development') {
+function config (environment = 'production') {
+  const SRC_FOLDER = path.resolve(__dirname, '..', 'src');
+
   return {
-    PORT: process.env.PORT || 3000,
-    SRC_FOLDER: path.resolve(__dirname, '..', 'src'),
-    PUBLIC_PATH: '/static',
-    PUBLIC_FOLDER: path.resolve(__dirname, '..', 'public')
+    PORT: parseInt(process.env.PORT, 10) || 3000,
+    SRC_FOLDER: SRC_FOLDER,
+    PUBLIC_PATH: '/static/',
+    PUBLIC_FOLDER: path.resolve(__dirname, '..', 'public'),
+    SRC_CLIENT_FOLDER: path.join(SRC_FOLDER, 'client')
   };
 }
 
